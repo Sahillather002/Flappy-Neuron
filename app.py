@@ -53,7 +53,7 @@ class Bird:
             if self.tilt> -90:
                 self.tilt-=self.rot_vel   
     
-    def drow(self,win):
+    def draw(self,win):
         self.img_count+=1
 
         if self.img_count < self.animation_time:
@@ -73,9 +73,34 @@ class Bird:
             self.img_count=self.animation_time*2
 
         #will rotate the image about the center
-        rotated_image = pygame.transform.rotate(self.img,self.tilt)
-        new_rect=rotated_image.get_rect(center=self.get_rect(topLeft=(self.x,self.y)).center)
-        win.blit(rotated_image,new_rect.topleft)
+        rotated_image = pygame.transform.rotate(self.img, self.tilt)
+        new_rect = rotated_image.get_rect(
+            center=self.img.get_rect(topleft=(self.x, self.y).center)
+        )
+        win.blit(rotated_image, new_rect.topleft)
 
-    def get_mask(selft):
+    def get_mask(self):
         return pygame.mask.from_surface(self.img)
+    
+
+def draw_window(win,bird):
+    win.blit(bg_img,(0,0))
+    bird.draw(win)
+    pygame.display.update()
+
+def main():
+    bird = Bird(200,200)
+    win=pygame.display.set_mode((win_width,win_height))
+    clock = pygame.time.Clock()
+    run=True
+    while run:
+        clock.tick(30)
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                run=False
+        draw_window(win,bird)
+
+    pygame.quit()
+    quit()
+
+main()
