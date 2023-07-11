@@ -3,13 +3,12 @@ import neat
 import time
 import os
 import random
-import visualize
 import pickle
 pygame.font.init()
 
 
-win_width=800
-win_height=600
+win_width=600
+win_height=800
 floor=730
 
 win= pygame.display.set_mode((win_width,win_height))
@@ -104,7 +103,7 @@ class Pipe:
 
         self.top=0
         self.bottom=0
-        self.pipe_top=pygame.transform.flip()
+        self.pipe_top=pygame.transform.flip(pipe_img, False, True)
         self.pipe_bottom=pipe_img
 
         self.passed=False
@@ -160,27 +159,50 @@ class Base:
         win.blit(self.img,(self.x1,self.y))
         win.blit(self.img,(self.x2,self.y))
 
-def draw_window(win,birds,pipes,base,score,gen):
-    win.blit(bg_img,(0,0))
+def blitRotateCenter(surf, image, topleft, angle):
+    rotated_image = pygame.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(center = image.get_rect(topleft = topleft).center)
+
+    surf.blit(rotated_image, new_rect.topleft)
+
+def draw_window(win,birds,pipes,base,score,gen,pipe_ind):
+    if gen == 0:
+        gen = 1
+    win.blit(bg_img, (0,0))
 
     for pipe in pipes:
         pipe.draw(win)
 
-    text = stat_font.render("Score:"+str(score),1,(255,255,255))
-    win.blit(text,(win_width-10-text.get_width()))
-    
-    text = stat_font.render("Generation:"+str(gen),1,(255,255,255))
-    win.blit(text,(10,10))
-
     base.draw(win)
     for bird in birds:
+        # draw lines from bird to pipe
+        if draw_lines:
+            try:
+                pygame.draw.line(win, (255,0,0), (bird.x+bird.img.get_width()/2, bird.y + bird.img.get_height()/2), (pipes[pipe_ind].x + pipes[pipe_ind].PIPE_TOP.get_width()/2, pipes[pipe_ind].height), 5)
+                pygame.draw.line(win, (255,0,0), (bird.x+bird.img.get_width()/2, bird.y + bird.img.get_height()/2), (pipes[pipe_ind].x + pipes[pipe_ind].PIPE_BOTTOM.get_width()/2, pipes[pipe_ind].bottom), 5)
+            except:
+                pass
+        # draw bird
         bird.draw(win)
+
+    # score
+    score_label = stat_font.render("Score: " + str(score),1,(255,255,255))
+    win.blit(score_label, (win_width - score_label.get_width() - 15, 10))
+
+    # generations
+    score_label = stat_font.render("Gens: " + str(gen-1),1,(255,255,255))
+    win.blit(score_label, (10, 10))
+
+    # alive
+    score_label = stat_font.render("Alive: " + str(len(birds)),1,(255,255,255))
+    win.blit(score_label, (10, 50))
+
     pygame.display.update()
 
 
 
-def main(genomes,config):
-    global generation
+def eval_genomes(genomes,config):
+    global generation,win
     generation+=1
     nets=[]
     ge=[]
@@ -194,7 +216,7 @@ def main(genomes,config):
         ge.append(g)
 
 
-    base = Base(730)
+    base = Base(floor)
     pipes = [Pipe(700)]
     win=pygame.display.set_mode((win_width,win_height))
     clock = pygame.time.Clock()
@@ -221,8 +243,7 @@ def main(genomes,config):
         for x,bird in enumerate(birds):
             bird.move()
             ge[x].fitness+=0.1
-            output=nets[x].activate((bird.y,abs(bird.y-pipes[pipe_ind].height,abs(bird.y-pipes[pipe_ind].bottom))))
-
+            output = nets[birds.index(bird)].activate((bird.y, abs(bird.y - pipes[pipe_ind].height), abs(bird.y - pipes[pipe_ind].bottom)))
             if output[0]>0.5:
                 bird.jump()
 
@@ -257,23 +278,23 @@ def main(genomes,config):
             pipes.append(Pipe(700))
 
         for r in rem:
-            pipes.remove(random)
+            pipes.remove(r)
 
         for x,bird in enumerate(birds):
-            if bird.y + bird.img.get_height()>=730:
+            if bird.y + bird.img.get_height()>=730 or bird.y<-50:
                 birds.pop(x)
                 nets.pop(x)
                 ge.pop(x)
 
         base.move()
-        draw_window(win,birds,pipes,base,score,generation)
+        draw_window(win,birds,pipes,base,score,generation,pipe_ind)
 
     
 
 
 
 def run(config_path):
-    config=neat.config(neat.DefaultGenome,neat.DefaultReproduction,
+    config=neat.config.Config(neat.DefaultGenome,neat.DefaultReproduction,
                        neat.DefaultSpeciesSet,neat.DefaultStagnation,
                        config_path)
 
@@ -284,7 +305,10 @@ def run(config_path):
 
     winner=p.run(eval_genomes,50)
 
+    # show final stats
+    print('\nBest genome:\n{!s}'.format(winner))
+
 if __name__== "__main__":
     local_dir=os.path.dirname(__file__)
-    config_path=os.path.join(local_dir,"config-feedforward.txt")
+    config_path=os.path.join(local_dir,'config-feedforward.txt')
     run(config_path)
