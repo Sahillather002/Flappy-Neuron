@@ -1,5 +1,7 @@
 # FlappyBird-Neuron
 
+![flappy](https://github.com/Sahillather002/Flappy-Neuron/assets/72077931/62b34188-49fb-44fa-ae05-e8c73134b10b)
+
 ![image](https://github.com/Sahillather002/Flappy-Neuron/assets/72077931/b181aa85-df35-4210-b20e-9cca7f048ccd)
 
 ## Birds are optimised learning at each generation and distance travelled.
