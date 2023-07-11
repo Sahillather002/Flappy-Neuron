@@ -7,7 +7,7 @@ import pickle
 pygame.font.init()
 
 
-win_width=600
+win_width=570
 win_height=800
 floor=730
 
@@ -60,7 +60,7 @@ class Bird:
             d-=2
         
         self.y=self.y+d
-        if d<0 or self.y <self.height+50:
+        if d<0 or self.y < self.height+50:
             if self.tilt < self.max_rotation:
                 self.tilt=self.max_rotation
         else:
@@ -99,7 +99,7 @@ class Pipe:
     def __init__(self,x):
         self.x=x
         self.height=0
-        self.gap=100
+        self.gap=200
 
         self.top=0
         self.bottom=0
@@ -152,6 +152,7 @@ class Base:
 
         if self.x1+self.width<0:
             self.x1=self.x2+self.width
+
         if self.x2+self.width<0:
             self.x2=self.x1+self.width
         
@@ -218,7 +219,7 @@ def eval_genomes(genomes,config):
 
     base = Base(floor)
     pipes = [Pipe(700)]
-    win=pygame.display.set_mode((win_width,win_height))
+
     clock = pygame.time.Clock()
 
     score=0
