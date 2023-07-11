@@ -247,46 +247,47 @@ def eval_genomes(genomes,config):
             if output[0]>0.5:
                 bird.jump()
 
+        base.move()
 
         #game
         rem=[]
         add_pipe=False
         for pipe in pipes:
+            pipe.move()
             for x,bird in enumerate(birds):
                 if pipe.collide(bird):
                     ge[x].fitness-=1
                     birds.pop(x)
                     nets.pop(x)
                     ge.pop(x)
-
-                if not pipe.passed and pipe.x<bird.x:
-                    pipe.passed=True
-                    add_pipe=True
             
             if pipe.x + pipe.pipe_top.get_width()<0:
                 rem.append(pipe)
 
-            pipe.move()
+            if not pipe.passed and pipe.x < bird.x:
+                pipe.passed=True
+                add_pipe=True
+            #pipe.move()
         
         if add_pipe:
             score+=1
 
-            #for birds that will pass pipe will get extra score
+        #for birds that will pass pipe will get extra score
             for g in ge:
                 g.fitness+=5
 
-            pipes.append(Pipe(700))
+            pipes.append(Pipe(win_width))
 
         for r in rem:
             pipes.remove(r)
 
         for x,bird in enumerate(birds):
-            if bird.y + bird.img.get_height()>=730 or bird.y<-50:
+            if bird.y + bird.img.get_height()-10>=floor or bird.y<-50:
                 birds.pop(x)
                 nets.pop(x)
                 ge.pop(x)
 
-        base.move()
+        #base.move()
         draw_window(win,birds,pipes,base,score,generation,pipe_ind)
 
     
